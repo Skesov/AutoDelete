@@ -1,8 +1,6 @@
-# Hiatus, Unsupported Versions, Rate Limiting & Self Hosting
+# AutoDelete
 
 This project forked from riking/AutoDelete
-
-# AutoDelete
 
 ### _retention policies for 'gamers'_
 
