@@ -1,4 +1,4 @@
-package autodelete
+package main
 
 import (
 	"encoding/json"
@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/skesov/AutoDelete/topk"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/prometheus/client_golang/prometheus"
-
-	topk "github.com/riking/AutoDelete/go-prometheus-topk"
 )
 
 const minTimeBetweenDeletion = time.Second * 5
@@ -245,7 +245,7 @@ func (c *ManagedChannel) loadPins() ([]*discordgo.Message, error) {
 		return nil, err
 	}
 
-	if disCh.LastPinTimestamp == "" {
+	if disCh.LastPinTimestamp == nil {
 		return nil, nil
 	}
 
@@ -391,10 +391,7 @@ func (c *ManagedChannel) mergeBacklog(msgs []*discordgo.Message) {
 			continue
 		}
 
-		ts, err := v.Timestamp.Parse()
-		if err != nil {
-			panic("Timestamp format change")
-		}
+		ts := v.Timestamp
 		if ts.IsZero() {
 			continue
 		}
@@ -554,7 +551,6 @@ func (c *ManagedChannel) GetNextDeletionTime() (deadline time.Time) {
 	}()
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	for len(c.liveMessages) > 0 {
 		// Recheck keepLookup
 		if c.keepLookup[c.liveMessages[0].MessageID] {
@@ -564,7 +560,7 @@ func (c *ManagedChannel) GetNextDeletionTime() (deadline time.Time) {
 		break
 	}
 	if len(c.liveMessages) == 0 {
-		return time.Now().Add(240 * time.Hour)
+		return time.Now().Add(12 * time.Hour)
 	}
 
 	if c.MaxMessages > 0 && len(c.liveMessages) > c.MaxMessages {
@@ -581,7 +577,7 @@ func (c *ManagedChannel) GetNextDeletionTime() (deadline time.Time) {
 		}
 		return ts
 	}
-	return time.Now().Add(240 * time.Hour)
+	return time.Now().Add(12 * time.Hour)
 }
 
 const errCodeBulkDeleteOld = 50034

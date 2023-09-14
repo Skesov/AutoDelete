@@ -1,4 +1,4 @@
-package autodelete
+package main
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const userAgent = "AutoDelete (https://github.com/riking/AutoDelete, v1.4)"
+const userAgent = "AutoDelete (https://github.com/Skesov/AutoDelete, v2.0)"
 
 type userAgentSetter struct {
 	t http.RoundTripper
@@ -41,8 +41,8 @@ func (b *Bot) ConnectDiscord(shardID, shardCount int) error {
 
 	s.Identify.Compress = true
 	s.Identify.Properties.OS = runtime.GOOS
-	s.Identify.Properties.Browser = "github.com/riking/AutoDelete"
-	s.Identify.Properties.Device = "github.com/riking/AutoDelete"
+	s.Identify.Properties.Browser = "github.com/Skesov/AutoDelete"
+	s.Identify.Properties.Device = "github.com/Skesov/AutoDelete"
 	if b.Config.StatusMessage != nil {
 		s.Identify.Presence.Game.Name = *b.Config.StatusMessage
 		s.Identify.Presence.Game.Type = discordgo.ActivityTypeGame
@@ -222,12 +222,18 @@ func (b *Bot) OnChannelPins(s *discordgo.Session, ev *discordgo.ChannelPinsUpdat
 	}
 
 	if ev.LastPinTimestamp == "" {
-		disCh.LastPinTimestamp = ""
+		disCh.LastPinTimestamp = nil
 	} else {
-		disCh.LastPinTimestamp = discordgo.Timestamp(ev.LastPinTimestamp)
+		disCh.LastPinTimestamp = getTimestamp(ev.LastPinTimestamp)
 	}
 	fmt.Printf("[pins] got pins update for %s - new lpts %s\n", mCh, ev.LastPinTimestamp)
 	mCh.UpdatePins(ev.LastPinTimestamp)
+}
+
+func getTimestamp(lastPinTimestamp string) *time.Time {
+	var t = time.Time{}
+	t, _ = time.Parse(time.RFC3339, string(lastPinTimestamp))
+	return &t
 }
 
 func (b *Bot) OnReady(s *discordgo.Session, m *discordgo.Ready) {
