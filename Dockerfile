@@ -16,4 +16,4 @@ RUN chmod +x ./autodelete
 
 EXPOSE 2202
 
-RUN ./autodelete
+CMD ["./autodelete"]
