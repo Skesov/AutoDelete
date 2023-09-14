@@ -222,7 +222,7 @@ func (b *Bot) handleCriticalPermissionsErrors(channelID string, srcErr error) bo
 				_, err := b.s.ChannelMessageSend(channelID, logMsg)
 				fmt.Println("error reporting removal to channel", channelID, ":", err)
 			}
-			b.deleteChannelConfig(channelID)
+			_ = b.deleteChannelConfig(channelID)
 			return true
 		}
 	}
@@ -272,7 +272,7 @@ func (b *Bot) LoadChannelConfigs() error {
 }
 
 func (b *Bot) initialLoadChannel(chID string) {
-	var errHandled = false
+	var errHandled bool
 
 	conf, err := b.storage.GetChannel(chID)
 	if os.IsNotExist(err) {
@@ -327,7 +327,7 @@ func (b *Bot) GetChannel(channelID string, qos LoadQOS) (*ManagedChannel, error)
 		return nil, err
 	}
 	b.mu.RLock()
-	mCh, _ = b.channels[channelID]
+	mCh = b.channels[channelID]
 	b.mu.RUnlock()
 	return mCh, nil
 }
@@ -370,7 +370,7 @@ func (b *Bot) loadChannel(channelID string, qos LoadQOS) error {
 		if absDuration < 0 {
 			absDuration = -absDuration
 		}
-		b.s.ChannelMessageSend(channelID, fmt.Sprintf(":warning: AutoDelete is now disabled in this channel due to corrupt configuration: negative values were found. It must be re-enabled manually.\nFound configuration: duration %v, messages %d\nAn administrator can fix this by typing the following command:\n`@%s#%s setup %v %d`", conf.LiveTime, conf.MaxMessages, b.me.Username, b.me.Discriminator, absDuration, absMessages))
+		_, _ = b.s.ChannelMessageSend(channelID, fmt.Sprintf(":warning: AutoDelete is now disabled in this channel due to corrupt configuration: negative values were found. It must be re-enabled manually.\nFound configuration: duration %v, messages %d\nAn administrator can fix this by typing the following command:\n`@%s#%s setup %v %d`", conf.LiveTime, conf.MaxMessages, b.me.Username, b.me.Discriminator, absDuration, absMessages))
 		return errNegativeConfigValues
 	}
 
@@ -380,7 +380,7 @@ func (b *Bot) loadChannel(channelID string, qos LoadQOS) error {
 	}
 	if mCh.needsExport {
 		fmt.Printf("[migr] Resaving channel %s\n", channelID)
-		b.saveChannelConfig(mCh.Export())
+		_ = b.saveChannelConfig(mCh.Export())
 		mCh.mu.Lock()
 		mCh.needsExport = false
 		mCh.mu.Unlock()

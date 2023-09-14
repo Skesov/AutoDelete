@@ -63,7 +63,7 @@ func (b *Bot) HTTPOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	if guildInfo, ok := t.Extra("guild").(map[string]interface{}); ok {
 		if guildID, ok := guildInfo["id"].(string); ok {
 			if banned, err := b.storage.IsBanned(guildID); banned {
-				b.s.GuildLeave(guildID)
+				_ = b.s.GuildLeave(guildID)
 				http.Error(w, "AutoDelete is not available on this server.", http.StatusForbidden)
 				fmt.Printf("[INFO] join attempt for banned server %s\n", guildID)
 				return

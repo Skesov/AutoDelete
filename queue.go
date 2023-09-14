@@ -283,7 +283,7 @@ start:
 		fmt.Printf("[reap] sleeping for %v\n", waitTime-(waitTime%time.Second))
 		q.timer.Reset(waitTime + 2*time.Millisecond)
 		q.cond.Wait()
-		actualWait := time.Now().Sub(now)
+		actualWait := time.Since(now)
 		mReapqWaitDuration.WithLabelValues(q.label).Observe(float64(actualWait) / float64(time.Second))
 		goto start
 	}

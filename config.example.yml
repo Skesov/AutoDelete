@@ -1,3 +1,4 @@
+---
 # see config.go "type Config" for more fields
 clientid:
 clientsecret:

@@ -88,7 +88,10 @@ func (s *DiskStorage) SaveChannel(conf ManagedChannelMarshal) error {
 	if err != nil {
 		return err
 	}
-	f.Write(by)
+	_, err = f.Write(by)
+	if err != nil {
+		return err
+	}
 	err = f.Close()
 	if err != nil {
 		return err
