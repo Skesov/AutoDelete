@@ -162,7 +162,7 @@ func (b *Bot) OnMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	b.mu.RUnlock()
 
 	if !ok {
-		b.loadChannel(m.Message.ChannelID, QOSNewMessage)
+		_ = b.loadChannel(m.Message.ChannelID, QOSNewMessage)
 		b.mu.RLock()
 		mCh = b.channels[m.Message.ChannelID]
 		b.mu.RUnlock()
@@ -182,7 +182,7 @@ func (b *Bot) OnChannelDelete(s *discordgo.Session, ev *discordgo.ChannelDelete)
 	}
 
 	mCh.Disable()
-	b.deleteChannelConfig(mCh.ChannelID)
+	_ = b.deleteChannelConfig(mCh.ChannelID)
 }
 
 func (b *Bot) OnGuildRemove(s *discordgo.Session, ev *discordgo.GuildDelete) {
@@ -202,7 +202,7 @@ func (b *Bot) OnGuildRemove(s *discordgo.Session, ev *discordgo.GuildDelete) {
 
 	for _, mCh := range toRemove {
 		mCh.Disable()
-		b.deleteChannelConfig(mCh.ChannelID)
+		_ = b.deleteChannelConfig(mCh.ChannelID)
 	}
 	fmt.Printf("[LOG] Removed %v channels from guild %v\n", len(toRemove), guildID)
 }
@@ -231,7 +231,7 @@ func (b *Bot) OnChannelPins(s *discordgo.Session, ev *discordgo.ChannelPinsUpdat
 }
 
 func getTimestamp(lastPinTimestamp string) *time.Time {
-	var t = time.Time{}
+	var t time.Time
 	t, _ = time.Parse(time.RFC3339, string(lastPinTimestamp))
 	return &t
 }

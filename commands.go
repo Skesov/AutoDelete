@@ -33,7 +33,7 @@ func (b *Bot) GetMsgChGuild(m *discordgo.Message) (*discordgo.Channel, *discordg
 }
 
 func CommandHelp(b *Bot, m *discordgo.Message, rest []string) {
-	b.s.ChannelMessageSend(m.ChannelID, textHelp)
+	_, _ = b.s.ChannelMessageSend(m.ChannelID, textHelp)
 }
 
 func CommandAdminHelp(b *Bot, m *discordgo.Message, rest []string) {
@@ -66,11 +66,11 @@ func CommandAdminSay(b *Bot, m *discordgo.Message, rest []string) {
 
 	ch, err := b.Channel(channelID)
 	if err != nil {
-		b.s.ChannelMessageSend(m.ChannelID, "channel does not exist")
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "channel does not exist")
 		return
 	}
 
-	b.s.ChannelMessageSendComplex(ch.ID, &discordgo.MessageSend{
+	_, _ = b.s.ChannelMessageSendComplex(ch.ID, &discordgo.MessageSend{
 		Content: "[ADMIN]",
 		Embed: &discordgo.MessageEmbed{
 			Title:       "Message from bot administrator",
@@ -88,7 +88,7 @@ func CommandSetDonor(b *Bot, m *discordgo.Message, rest []string) {
 	}
 
 	if m.Author.ID != b.Config.AdminUser {
-		b.s.ChannelMessageSend(m.ChannelID, "patron checking not yet implemented")
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "patron checking not yet implemented")
 		return
 	}
 
@@ -97,7 +97,7 @@ func CommandSetDonor(b *Bot, m *discordgo.Message, rest []string) {
 	b.mu.RUnlock()
 
 	if !ok {
-		b.s.ChannelMessageSend(m.ChannelID, "not currently deleting in that channel")
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "not currently deleting in that channel")
 		return
 	}
 
@@ -105,9 +105,9 @@ func CommandSetDonor(b *Bot, m *discordgo.Message, rest []string) {
 	mCh.IsDonor = true
 	mCh.mu.Unlock()
 
-	b.saveChannelConfig(mCh.Export())
+	_ = b.saveChannelConfig(mCh.Export())
 
-	b.s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("set %v as a donor channel", channelID))
+	_, _ = b.s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("set %v as a donor channel", channelID))
 	b.QueueLoadBacklog(mCh, QOSInteractive)
 }
 
@@ -132,22 +132,22 @@ func CommandCheck(b *Bot, m *discordgo.Message, rest []string) {
 
 	apermissions, err := b.s.UserChannelPermissions(m.Author.ID, m.ChannelID)
 	if err != nil {
-		b.s.ChannelMessageSend(m.ChannelID, "could not check your permissions: "+err.Error())
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "could not check your permissions: "+err.Error())
 		return
 	}
 	if apermissions&perm == 0 {
-		b.s.ChannelMessageSend(m.ChannelID, "You must have the Manage Messages permission to change AutoDelete settings.")
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "You must have the Manage Messages permission to change AutoDelete settings.")
 		return
 	}
 
 	mCh, err := b.GetChannel(m.ChannelID, QOSInteractive)
 	if err != nil {
-		b.s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Error checking settings: %v", err))
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Error checking settings: %v", err))
 		return
 	}
 
 	if mCh == nil {
-		b.s.ChannelMessageSend(m.ChannelID, "This channel is not set up for deletion.")
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "This channel is not set up for deletion.")
 		return
 	}
 
@@ -171,7 +171,7 @@ func CommandCheck(b *Bot, m *discordgo.Message, rest []string) {
 		fmt.Fprintf(&msg, " I am aware of %d pinned messages.", len(keeps)-1)
 	}
 
-	b.s.ChannelMessageSend(m.ChannelID, msg.String())
+	_, _ = b.s.ChannelMessageSend(m.ChannelID, msg.String())
 }
 
 func CommandModify(b *Bot, m *discordgo.Message, rest []string) {
@@ -189,11 +189,11 @@ func CommandModify(b *Bot, m *discordgo.Message, rest []string) {
 
 	apermissions, err := b.s.UserChannelPermissions(m.Author.ID, m.ChannelID)
 	if err != nil {
-		b.s.ChannelMessageSend(m.ChannelID, "could not check your permissions: "+err.Error())
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "could not check your permissions: "+err.Error())
 		return
 	}
 	if apermissions&perm == 0 {
-		b.s.ChannelMessageSend(m.ChannelID, "You must have the Manage Messages permission to change AutoDelete settings.")
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "You must have the Manage Messages permission to change AutoDelete settings.")
 		return
 	}
 
@@ -212,11 +212,11 @@ func CommandModify(b *Bot, m *discordgo.Message, rest []string) {
 		}
 	}
 	if !anySet {
-		b.s.ChannelMessageSend(m.ChannelID, "Bad format for `set` command. Provide a count (20) and/or a duration (90m) to purge messages after. Maximum unit is hours.")
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "Bad format for `set` command. Provide a count (20) and/or a duration (90m) to purge messages after. Maximum unit is hours.")
 		return
 	}
 	if duration < 0 || count < 0 {
-		b.s.ChannelMessageSend(m.ChannelID, "Count and/or duration cannot be negative.")
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "Count and/or duration cannot be negative.")
 		return
 	}
 
@@ -231,13 +231,13 @@ func CommandModify(b *Bot, m *discordgo.Message, rest []string) {
 	} else if count != 0 {
 		confMessage, err = b.s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Messages in this channel will be deleted after %d other messages.", count))
 	} else {
-		confMessage, err = b.s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Messages in this channel will not be auto-deleted."))
+		confMessage, err = b.s.ChannelMessageSend(m.ChannelID, "Messages in this channel will not be auto-deleted.")
 		doNotReload = true
 	}
 
 	if err != nil {
 		fmt.Println("Error sending config message:", err)
-		b.s.ChannelMessageSend(m.ChannelID, "Encountered error, settings were not changed.\n"+err.Error())
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "Encountered error, settings were not changed.\n"+err.Error())
 		return
 	}
 
@@ -282,7 +282,7 @@ func CommandModify(b *Bot, m *discordgo.Message, rest []string) {
 
 	if err != nil {
 		fmt.Println("Error:", err)
-		b.s.ChannelMessageSend(m.ChannelID, "Encountered error, settings may or may not have saved.\n"+err.Error())
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "Encountered error, settings may or may not have saved.\n"+err.Error())
 	}
 	fmt.Println("[load] Changed settings for channel", m.ChannelID, confMessage.Content)
 
@@ -319,16 +319,16 @@ func CommandModify(b *Bot, m *discordgo.Message, rest []string) {
 		}
 
 		if count > limit {
-			b.s.ChannelMessageSend(channelID, fmt.Sprintf("⚠️ The number of messages configured for deletion is over %d. Messages will not be reliably deleted. (Configured: %d)", limit, count))
+			_, _ = b.s.ChannelMessageSend(channelID, fmt.Sprintf("⚠️ The number of messages configured for deletion is over %d. Messages will not be reliably deleted. (Configured: %d)", limit, count))
 		} else if numMessages >= limit {
-			b.s.ChannelMessageSend(channelID, fmt.Sprintf("⚠️ The number of messages in this channel is over %d. Messages may not be reliably deleted. (Saw: %d)", limit, numMessages))
+			_, _ = b.s.ChannelMessageSend(channelID, fmt.Sprintf("⚠️ The number of messages in this channel is over %d. Messages may not be reliably deleted. (Saw: %d)", limit, numMessages))
 		}
 
 		// Give done reaction
-		b.s.MessageReactionRemove(channelID, msgID, emojiBusy, "@me")
+		_ = b.s.MessageReactionRemove(channelID, msgID, emojiBusy, "@me")
 		emojiErr = b.s.MessageReactionAdd(channelID, msgID, emojiDone)
 		time.Sleep(30 * time.Second)
-		b.s.MessageReactionRemove(channelID, msgID, emojiDone, "@me")
+		_ = b.s.MessageReactionRemove(channelID, msgID, emojiDone, "@me")
 	}()
 }
 
@@ -348,30 +348,30 @@ func CommandLeave(b *Bot, m *discordgo.Message, rest []string) {
 		}
 		perm := int64(discordgo.PermissionManageServer)
 		if apermissions&perm != perm {
-			b.s.ChannelMessageSend(m.ChannelID, "Leaving the current server requires MANAGE_SERVER permission.")
+			_, _ = b.s.ChannelMessageSend(m.ChannelID, "Leaving the current server requires MANAGE_SERVER permission.")
 			return
 		}
 	} else if rest[0] == "channel" && len(rest) == 2 {
 		if m.Author.ID != b.Config.AdminUser {
-			b.s.ChannelMessageSend(m.ChannelID, "Leaving other servers can only be done by the bot controller.")
+			_, _ = b.s.ChannelMessageSend(m.ChannelID, "Leaving other servers can only be done by the bot controller.")
 			return
 		}
 		channel, err := b.Channel(rest[1])
 		if err != nil {
-			b.s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Could not find channel %q", rest[0]))
+			_, _ = b.s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Could not find channel %q", rest[0]))
 			return
 		}
 		guildID = channel.GuildID
 	} else {
 		if m.Author.ID != b.Config.AdminUser {
-			b.s.ChannelMessageSend(m.ChannelID, "Leaving other servers can only be done by the bot controller.")
+			_, _ = b.s.ChannelMessageSend(m.ChannelID, "Leaving other servers can only be done by the bot controller.")
 			return
 		}
 		guildID = rest[0]
 	}
 
 	if guildID == b.Config.DonorGuild {
-		b.s.ChannelMessageSend(m.ChannelID, "Bot will never voluntarily leave the primary guild")
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, "Bot will never voluntarily leave the primary guild")
 		return
 	}
 
@@ -379,11 +379,11 @@ func CommandLeave(b *Bot, m *discordgo.Message, rest []string) {
 	err := b.s.GuildLeave(guildID)
 	if err != nil {
 		msg := fmt.Sprintf("Error leaving guild ID %s: %v", guildID, err)
-		b.s.ChannelMessageSend(m.ChannelID, msg)
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, msg)
 		fmt.Println("[cmdE] error leaving:", err)
 	} else {
 		msg := fmt.Sprintf("Leaving guild ID %s: ok", guildID)
-		b.s.ChannelMessageSend(m.ChannelID, msg)
+		_, _ = b.s.ChannelMessageSend(m.ChannelID, msg)
 	}
 }
 

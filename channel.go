@@ -229,7 +229,7 @@ func (b *Bot) Channel(channelID string) (*discordgo.Channel, error) {
 	if err != nil {
 		return ch, err
 	}
-	b.s.State.ChannelAdd(ch)
+	_ = b.s.State.ChannelAdd(ch)
 	return ch, nil
 }
 
